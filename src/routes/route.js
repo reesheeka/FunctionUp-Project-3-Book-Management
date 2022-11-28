@@ -1,13 +1,16 @@
 const express = require('express');
 const userController=require('../controllers/userController')
+const bookController=require('../controllers/bookController')
+
+const middleware=require('../middlewares/middleware')
 const router = express.Router();
 
 
 router.post('/register',userController.createUser)
 
-router.post('/login',)
+router.post('/login',userController.createLogin)
 
-router.post('/books',)
+router.post('/books',bookController.createBook)
 
 router.get('/books',)
 
