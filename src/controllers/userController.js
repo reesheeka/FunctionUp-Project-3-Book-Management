@@ -99,7 +99,7 @@ const createLogin = async function (req, res) {
 
         const token = jwt.sign(
             {
-            newId: user._id,
+            userId: user._id,
             iat: new Date().getTime(),
 
             //  exp:Math.floor(Date.now()/1000)+60*2

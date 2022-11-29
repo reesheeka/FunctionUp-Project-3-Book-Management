@@ -30,7 +30,7 @@ const authentication = function (req, res, Next) {
 
 const authorisation = async function (req, res, next) {
   try {
-    const decoded = req.decodedtoken
+    // const decoded = req.decodedtoken
     let token = req.headers["x-api-key"]
 
     let decodedtoken = jwt.verify(token, "project3group18")
