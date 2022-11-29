@@ -1,4 +1,4 @@
-const mongoose = required('mongoose');
+const mongoose = require('mongoose');
 const objectId = mongoose.Schema.Types.ObjectId
 
 const bookSchema = new mongoose.Schema({
@@ -42,6 +42,7 @@ const bookSchema = new mongoose.Schema({
     releasedAt: {
         type: Date,
         required: true,
+    
         //format("YYYY-MM-DD")
     }
 
