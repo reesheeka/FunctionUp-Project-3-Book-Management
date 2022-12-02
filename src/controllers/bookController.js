@@ -1,6 +1,18 @@
 const bookModel = require('../models/bookModel');
 const userModel = require('../models/userModel');
+const moment = require('moment');
 const { isValidObjectId } = require('mongoose');
+function stringVerify(value) {
+    if (typeof value !== "string" || value.trim().length == 0) {
+        return false
+    }
+    return true
+}
+
+function checkDate(str) {
+    var re = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/
+    return re.test(str);
+}
 
 
 //---------------------CREATE BOOK--------------------------
@@ -8,9 +20,6 @@ const createBook = async function (req, res) {
     try {
         let data = req.body
 
-        if (Object.keys(data).length == 0) {
-            return res.status(400).send({ status: false, message: "Please enter book details." })
-        }
 
         let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = data
 
@@ -27,22 +36,23 @@ const createBook = async function (req, res) {
             return res.status(400).send({ status: false, message: "Excerpt is required." })
         }
 
+        if (!stringVerify(excerpt)) {
+            return res.status(400).send({ status: false, msg: "Excerpt should not have space" })
+        }
+
+
+
         if (!userId) {
             return res.status(400).send({ status: false, message: "UserId is required." })
         }
 
-        const checkUserId = await userModel.findById(userId)
-
-        if (!checkUserId) {
-            return res.status(404).send({ status: false, message: "UserId not found." })
-        }
-
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, message: "Please enter valid userId." })
-        }
-
         if (!ISBN) {
             return res.status(400).send({ status: false, message: "ISBN is required." })
+        }
+
+        if (!/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(ISBN)) {
+
+            return res.status(400).send({ status: false, message: "ISBN should be in correct format " })
         }
         const checkISBN = await bookModel.findOne({ ISBN: ISBN })
         if (checkISBN) {
@@ -59,7 +69,12 @@ const createBook = async function (req, res) {
 
         if (!releasedAt) {
             return res.status(400).send({ status: false, message: "ReleasedAt is required." })
+        }//regex
+
+        if (!checkDate(releasedAt)) {
+            return res.status(400).send({ status: false, message: "Please enter a valid date format" })
         }
+
 
         let book = await bookModel.create(data)
         return res.status(201).send({ status: true, message: 'Success', data: book })
@@ -71,68 +86,131 @@ const createBook = async function (req, res) {
 
 //--------------------------------GET BOOK-------------------------------
 
+// const getBooks = async function (req, res) {
+//     try {
+
+
+//         const {category, subcategory, userId }= req.query
+
+//         // let filter = { isDeleted: false }
+
+//         // if (!userId && !category && !subcategory) {
+//         //     const allBook = await bookModel.find(filter);
+//         //     return res.status(200).send({ status: true, data: allBook });
+//         // }
+
+//         // if (userId) {
+//         //     filter.userId = userId;
+//         //   }
+//         //   if (req.query.userId) {
+//         //     if (!isValidObjectId(req.query.userId)) {
+//         //       return res
+//         //         .status(400)
+//         //         .send({ status: false, msg: "please enter a valid author id" });
+//         //     } else {
+//         //       req.query.userId = userId;
+//         //     }
+//         //   }
+//         //   if (!category) {
+//         //     return res.status(400).send({status: false, message: "Category should be present"})
+//         //   }
+
+//         //   if (subcategory) {
+//         //     filter.subcategory = subcategory;
+//         //   }
+
+//         // if(!userId){ return res.status(400).send({ status: false, msg: "UserId should be present" });}
+
+//         // if (data.userId) {
+//         //     if (!isValidObjectId(data.userId)) {
+//         //         return res.status(400).send({ status: false, message: "Please provide a valid user id." })
+//         //     }
+//         // }
+
+//         // if(!category){ return res.status(400).send({ status: false, msg: "Category should be present" });}
+//         // if(!subcategory){ return res.status(400).send({ status: false, msg: "Subcategory should be present" });}
+
+
+
+
+//         const books = await bookModel.find({ $and: [req.query, { isDeleted: false }] }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1, subcategory: 1 }).collation({ locale: "en" }).sort({ title: 1 })
+
+//         if (books.length == 0) {
+//             return res.status(404).send({ status: false, message: "No books Available." });
+//         }
+//         return res.status(200).send({ status: true, message: 'Success', count: books.length, data: books });
+//     }
+//     catch (error) {
+//         return res.status(500).send({ status: false, message: error.message });
+//     }
+// }
+
+
+
 const getBooks = async function (req, res) {
     try {
-    
+        const data = req.query;
+        const { userId, category, subcategory } = data;
 
-        const {category, subcategory, userId }= req.query
+        const filterData = { isDeleted: false };
 
-        // let filter = { isDeleted: false }
-
-        // if (!userId && !category && !subcategory) {
-        //     const allBook = await bookModel.find(filter);
-        //     return res.status(200).send({ status: true, data: allBook });
-        // }
-
-        // if (userId) {
-        //     filter.userId = userId;
-        //   }
-        //   if (req.query.userId) {
-        //     if (!isValidObjectId(req.query.userId)) {
-        //       return res
-        //         .status(400)
-        //         .send({ status: false, msg: "please enter a valid author id" });
-        //     } else {
-        //       req.query.userId = userId;
-        //     }
-        //   }
-        //   if (!category) {
-        //     return res.status(400).send({status: false, message: "Category should be present"})
-        //   }
-         
-        //   if (subcategory) {
-        //     filter.subcategory = subcategory;
-        //   }
-
-        // if(!userId){ return res.status(400).send({ status: false, msg: "UserId should be present" });}
-
-        // if (data.userId) {
-        //     if (!isValidObjectId(data.userId)) {
-        //         return res.status(400).send({ status: false, message: "Please provide a valid user id." })
-        //     }
-        // }
-        
-        // if(!category){ return res.status(400).send({ status: false, msg: "Category should be present" });}
-        // if(!subcategory){ return res.status(400).send({ status: false, msg: "Subcategory should be present" });}
-
-       
-      
-
-        const books = await bookModel.find({ $and: [req.query, { isDeleted: false }] }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1, subcategory: 1 }).collation({ locale: "en" }).sort({ title: 1 })
-
-        if (books.length == 0) {
-            return res.status(404).send({ status: false, message: "No books Available." });
+        if (Object.keys(data).length == 0) {
+            let getAllBooks = await bookModel
+                .find(filterData)
+                .sort({ title: 1 })
+                .select({
+                    _id: 1,
+                    title: 1,
+                    excerpt: 1,
+                    userId: 1,
+                    category: 1,
+                    subcategory: 1,
+                    releasedAt: 1,
+                    reviews: 1,
+                });
+            return res
+                .status(200)
+                .send({ status: true, message: "Books list", data: getAllBooks });
         }
-        return res.status(200).send({ status: true, message: 'Success', count: books.length, data: books });
+
+        if (userId) {
+            let isValidObjectId = userId;
+            if (!isValidObjectId) {
+                return res
+                    .status(400)
+                    .send({ status: false, message: "Enter valid user id" });
+            }
+            filterData.userId = userId;
+        }
+        if (category) {
+            filterData.category = category;
+        }
+        if (subcategory) {
+            filterData.subcategory = subcategory;
+        }
+
+        let books = await bookModel.find(filterData).sort({ title: 1 }).select({
+            _id: 1,
+            title: 1,
+            excerpt: 1,
+            userId: 1,
+            category: 1,
+            subcategory: 1,
+            releasedAt: 1,
+            reviews: 1,
+        });
+        if (books.length == 0) {
+            return res.status(404).send({ status: false, message: "No data found" });
+        }
+
+        return res
+            .status(200)
+            .send({ status: true, message: "Books list", data: books });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({ status: false, message: err.message });
     }
-    catch (error) {
-        return res.status(500).send({ status: false, message: error.message });
-    }
-}
-
-
-
-
+};
 
 //-------------------------------GET BOOK BY ID-------------------------------
 
@@ -162,14 +240,14 @@ const getBookById = async function (req, res) {
 
 const updateBookById = async function (req, res) {
     try {
-        const bookId = req.params.bookId
+        const bookId = req.params.bookId;
+        const data = req.body;
+
         if (!isValidObjectId(bookId)) {
             return res.status(404).send({ status: false, message: "Please enter a valid book id." })
         }
 
-        const data = req.body
-
-        const check = await bookModel.find({ title: data.title, ISBN: data.ISBN })
+        const check = await bookModel.findOne({ title: data.title, ISBN: data.ISBN })
         if (check) {
             return res.status(400).send({ status: false, message: "Title/ISBN is already present" })
         }
@@ -180,7 +258,8 @@ const updateBookById = async function (req, res) {
             return res.status(404).send({ status: false, message: " No book found with given id." })
         }
 
-        const updateData = await bookModel.findByIdAndUpdate({ _id: bookId }, { $set: { ...data } }, { new: true, upsert: true })
+
+        const updateData = await bookModel.findByIdAndUpdate({ _id: bookId }, { $set: { ...data } }, { new: true })
         // $set: { title: Data.title, excerpt: Data.excerpt, releaseAt: Data.releaseAt, ISBN: Data.ISBN },
         return res.status(200).send({ status: true, message: "Success", data: updateData })
     }
@@ -206,7 +285,7 @@ const deleteBookById = async function (req, res) {
         }
         await bookModel.findOneAndUpdate({ _id: bookId }, { $set: { isDeleted: true } })
 
-        return res.status(200).send({ status: true, message: "Successfully deleted." })
+        return res.status(200).send({ status: true, message: "Successfully deleted" })
     }
     catch (error) {
         return res.status(500).send({ status: false, message: error.message })

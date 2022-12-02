@@ -46,6 +46,10 @@ const authorisation = async function (req, res, next) {
       if (id != userId) return res.status(403).send({ status: false, message: "You are not authorised to perform this task 1" })
     }
     else {
+      const data = req.body
+      if (Object.keys(data).length == 0) {
+        return res.status(400).send({ status: false, message: "Please enter book details." })
+    }
       updatedbookId = req.body.userId
       let id = decodedtoken.userId
       console.log(updatedbookId)

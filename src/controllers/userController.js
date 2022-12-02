@@ -1,39 +1,58 @@
 const userModel = require('../models/userModel');
 const jwt = require("jsonwebtoken");
+function stringVerify(value) {
+    if (typeof value !== "string" || value.trim().length == 0) {
+        return false
+    }
+    return true
+}
+
 
 //=============Create User===============
 const createUser = async function (req, res) {
     try {
         let user = req.body
+        //not sending any data
         if (Object.keys(user).length == 0) {
             return res.status(400).send({ status: false, message: "please enter user details" })
         }
-      const arr=["title","name","phone","email","password"]
-      for(let field of arr){
-        if (!user[field]) {
-            return res.status(400).send({ status: false, message:  `${field} is required`})
-        }
-      }
+        const arr = ["title", "name", "phone", "email", "password"]
+        //   for(let field of arr){
+        //     if (!user[field]) {
+        //         return res.status(400).send({ status: false, message:  `${field} is required`})
+        //     }
+        //   }
+        
         let { title, name, phone, email, password } = user
-        // if (!title) {
-        //     return res.status(400).send({ status: false, message: "title is required" })
-        // }
+        if (!title) {
+            return res.status(400).send({ status: false, message: "title is required" })
+        }
+
 
         if (title != "Mr" && title != "Mrs" && title != "Miss") {
-            return res.status(400).send({ status: false, message: "title can only be mr,mrs and miss" })
+            return res.status(400).send({ status: false, message: "title can only be Mr,Mrs and Miss" })
         }
 
-        // if (!name) {
-        //     return res.status(400).send({ status: false, message: "user name is required" })
-        // }
+        if (!name) {
+            return res.status(400).send({ status: false, message: "user name is required" })
+        }
 
         if (!(/^[a-zA-Z ]+$/.test(name))) {
             return res.status(400).send({ status: false, message: "user name should be in alphabets" })
         }
 
-        // if (!phone) {
-        //     return res.status(400).send({ status: false, message: "phone number is required" })
+        if (!stringVerify(name)) {
+            return res.status(400).send({ status: false, msg: "Name should not have space" })
+        }
+
+
+        // if (name.indexOf(" ") >= 0) {
+        //     return res.status(400).send({ status: false, msg: "Name should not have space" })
         // }
+
+        if (!phone) {
+            return res.status(400).send({ status: false, message: "phone number is required" })
+        }
 
         let checkphone = await userModel.findOne({ phone: user.phone })
         if (checkphone) {
@@ -44,9 +63,9 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "enter valid phone number" })
         }
 
-        // if (!email) {
-        //     return res.status(400).send({ status: false, message: "Email is required." })
-        // }
+        if (!email) {
+            return res.status(400).send({ status: false, message: "Email is required." })
+        }
 
         if (!/^[a-zA-Z0-9_.+-]+@[a-z]+.[a-z]+$/.test(email)) {
             return res.status(400).send({ status: false, message: "Enter valid user's email." })
@@ -57,9 +76,9 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "Email is already taken, Please provide another email." })
         }
 
-        // if (!password) {
-        //     return res.status(400).send({ status: false, message: "Password is required." })
-        // }
+        if (!password) {
+            return res.status(400).send({ status: false, message: "Password is required." })
+        }
 
         if (!/^[a-zA-Z0-9@]{8,15}$/.test(password)) {
             return res.status(400).send({ status: false, message: "Password should be between 8 to 15 characters." })
@@ -73,7 +92,7 @@ const createUser = async function (req, res) {
 }
 
 
-//-----------------------------User Login----------------------------
+//=========================User Login =============================
 
 const createLogin = async function (req, res) {
     try {
@@ -99,10 +118,10 @@ const createLogin = async function (req, res) {
 
         const token = jwt.sign(
             {
-            userId: user._id,
-            iat: new Date().getTime(),
+                userId: user._id,
+                iat: new Date().getTime(),
 
-            //  exp:Math.floor(Date.now()/1000)+60*2
+                exp: Math.floor(Date.now() / 1000) + 60 * 600
             },
             "project3group18"
         )
@@ -114,4 +133,4 @@ const createLogin = async function (req, res) {
 }
 
 
-module.exports = {createUser, createLogin}
+module.exports = { createUser, createLogin }

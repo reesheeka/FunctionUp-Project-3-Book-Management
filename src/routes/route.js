@@ -1,6 +1,7 @@
 const express = require('express');
 const userController = require('../controllers/userController')
 const bookController = require('../controllers/bookController')
+const reviewController = require('../controllers/reviewController')
 
 const MW = require('../middlewares/middleware')
 const router = express.Router();
@@ -20,6 +21,11 @@ router.put('/books/:bookId', MW.authentication, MW.authorisation, bookController
 
 router.delete('/books/:bookId', MW.authentication, MW.authorisation, bookController.deleteBookById)
 
+// router.post("/books/:bookId/review",reviewController.bookReview)
+
+// router.put("/books/:bookId/review/:reviewId",reviewController.updateReview)
+
+//router.delete("/books/:bookId/review/:reviewId",reviewController.deleteBookReview)
 
 router.all('/*', function (req, res) {
     res.status(404).send({ status: false, message: 'Invalid HTTP Request' })
