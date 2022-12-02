@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const objectId = mongoose.Schema.Types.ObjectId
 
 
-const reviewSchema = new mongoose.connect({
+const reviewSchema = new mongoose.Schema({
     bookId: {
         type: objectId,
         required: true,

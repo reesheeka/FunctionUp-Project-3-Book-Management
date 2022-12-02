@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bookModel = require("../models/bookModel");
+const { isValidObjectId } = require('mongoose');
 
 //------------------------Authentication------------------------------
 const authentication = function (req, res, Next) {
@@ -36,8 +37,13 @@ const authorisation = async function (req, res, next) {
     let decodedtoken = jwt.verify(token, "project3group18")
 
     let updatedbookId = req.params.bookId
-    if (updatedbookId) {
+    
 
+    if (updatedbookId) {
+      if (!isValidObjectId(updatedbookId)) {
+        return res.status(404).send({ status: false, message: "Please enter a valid book id." })
+    }
+    
       let updatinguserId = await bookModel.find({ _id: updatedbookId }).select({ userId: 1, _id: 0 })
 
       let userId = updatinguserId.map(x => x.userId)

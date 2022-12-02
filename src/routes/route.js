@@ -21,11 +21,11 @@ router.put('/books/:bookId', MW.authentication, MW.authorisation, bookController
 
 router.delete('/books/:bookId', MW.authentication, MW.authorisation, bookController.deleteBookById)
 
-// router.post("/books/:bookId/review",reviewController.bookReview)
+ router.post("/books/:bookId/review",reviewController.createReview)
 
-// router.put("/books/:bookId/review/:reviewId",reviewController.updateReview)
+ router.put("/books/:bookId/review/:reviewId",reviewController.updatereviewBookById)
 
-//router.delete("/books/:bookId/review/:reviewId",reviewController.deleteBookReview)
+router.delete("/books/:bookId/review/:reviewId",reviewController.deleteBookReview)
 
 router.all('/*', function (req, res) {
     res.status(404).send({ status: false, message: 'Invalid HTTP Request' })
