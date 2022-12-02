@@ -1,18 +1,18 @@
-const express=require("express");
-const route =require("./routes/route.js")
-const mongoose=require("mongoose")
-const app=express();
+const express = require("express");
+const route = require("./routes/route.js")
+const mongoose = require("mongoose")
+const app = express();
 
 app.use(express.json());
 
 mongoose.connect("mongodb+srv://sanu12345:sanu12345@cluster0.iukctjm.mongodb.net/group18Database")
 
-.then(()=>console.log("MongoDB is connected"))
-.catch((error)=>console.log(error));
+  .then(() => console.log("MongoDB is connected"))
+  .catch((error) => console.log(error));
 
-app.use("/",route);
+app.use("/", route);
 
-app.listen( 3000, function () {
-    console.log("Express App Running on Port: 3000");
-  });
+app.listen(3000, function () {
+  console.log("Express App Running on Port: 3000");
+});
 

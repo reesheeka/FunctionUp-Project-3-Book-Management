@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const objectId = mongoose.Schema.Types.ObjectId
 
 
-const reviewSchema = new mongoose.connect({
+const reviewSchema = new mongoose.Schema({
     bookId: {
         type: objectId,
         required: true,
@@ -35,4 +35,5 @@ const reviewSchema = new mongoose.connect({
 }, { timestamps: true })
 
 
+//module.exports = mongoose.model('review', reviewSchema);
 module.exports = mongoose.model('review', reviewSchema);

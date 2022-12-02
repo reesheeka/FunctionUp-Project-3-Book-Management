@@ -1,6 +1,23 @@
 const userModel = require('../models/userModel');
 const jwt = require("jsonwebtoken");
 
+function stringVerify(value) {
+    if (typeof value === 'undefined' || value === null) {
+        return false
+    }
+    if (typeof value === 'string' && value.trim().length === 0) {
+        return false
+    } else {
+        return true
+    }
+}
+// function stringVerify(value) {
+//     if (typeof value !== "string" || value.trim().length == 0) {
+//         return false
+//     }
+//     return true
+// }
+
 //=============Create User===============
 const createUser = async function (req, res) {
     try {
@@ -8,26 +25,29 @@ const createUser = async function (req, res) {
         if (Object.keys(user).length == 0) {
             return res.status(400).send({ status: false, message: "please enter user details" })
         }
-      const arr=["title","name","phone","email","password"]
-      for(let field of arr){
-        if (!user[field]) {
-            return res.status(400).send({ status: false, message:  `${field} is required`})
-        }
-      }
+     // const arr=["title","name","phone","email","password"]
+    //   for(let field of arr){
+    //     if (!user[field]) {
+    //         return res.status(400).send({ status: false, message:  `${field} is required`})
+    //     }
+    //   }
         let { title, name, phone, email, password } = user
-        // if (!title) {
-        //     return res.status(400).send({ status: false, message: "title is required" })
-        // }
+        if (!title) {
+            return res.status(400).send({ status: false, message: "title is required" })
+        }
 
         if (title != "Mr" && title != "Mrs" && title != "Miss") {
             return res.status(400).send({ status: false, message: "title can only be mr,mrs and miss" })
         }
+        if(!stringVerify(name)){
+            return res.status(400).send({ status: false, message: "name should be string" })
+        }
 
-        // if (!name) {
-        //     return res.status(400).send({ status: false, message: "user name is required" })
-        // }
+        if (!name) {
+            return res.status(400).send({ status: false, message: "user name is required" })
+        }
 
-        if (!(/^[a-zA-Z ]+$/.test(name))) {
+        if (!(/^[a-zA-Z ]+$/.test(name)) || (!user.name === " ")) {
             return res.status(400).send({ status: false, message: "user name should be in alphabets" })
         }
 
@@ -48,7 +68,10 @@ const createUser = async function (req, res) {
         //     return res.status(400).send({ status: false, message: "Email is required." })
         // }
 
-        if (!/^[a-zA-Z0-9_.+-]+@[a-z]+.[a-z]+$/.test(email)) {
+        // if (!/^[a-zA-Z0-9_.+-]+@[a-z]+.[a-z]+$/.test(email)) {
+        //     return res.status(400).send({ status: false, message: "Enter valid user's email." })
+        // }
+         if (!/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(email)) {
             return res.status(400).send({ status: false, message: "Enter valid user's email." })
         }
 

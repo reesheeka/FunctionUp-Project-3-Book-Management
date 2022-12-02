@@ -2,6 +2,13 @@ const bookModel = require('../models/bookModel');
 const userModel = require('../models/userModel');
 const { isValidObjectId } = require('mongoose');
 
+function stringVerify(value) {
+    if (typeof value !== "string" || value.trim().length == 0) {
+        return false
+    }
+    return true
+}
+
 
 //---------------------CREATE BOOK--------------------------
 const createBook = async function (req, res) {
@@ -25,6 +32,9 @@ const createBook = async function (req, res) {
 
         if (!excerpt) {
             return res.status(400).send({ status: false, message: "Excerpt is required." })
+        }
+        if(!stringVerify(excerpt)){
+            return res.status(400).send({ status: false, message: "Excerpt ." })
         }
 
         if (!userId) {
@@ -118,7 +128,7 @@ const getBooks = async function (req, res) {
        
       
 
-        const books = await bookModel.find({ $and: [req.query, { isDeleted: false }] }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1, subcategory: 1 }).collation({ locale: "en" }).sort({ title: 1 })
+        const books = await bookModel.find({ $and: [req.query, { isDeleted: false }] }).sort({ title: 1 }).collation({ locale: "en" }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1, subcategory: 1 })
 
         if (books.length == 0) {
             return res.status(404).send({ status: false, message: "No books Available." });
@@ -169,7 +179,7 @@ const updateBookById = async function (req, res) {
 
         const data = req.body
 
-        const check = await bookModel.find({ title: data.title, ISBN: data.ISBN })
+        const check = await bookModel.findOne({ title: data.title, ISBN: data.ISBN })
         if (check) {
             return res.status(400).send({ status: false, message: "Title/ISBN is already present" })
         }
