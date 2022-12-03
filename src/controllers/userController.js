@@ -1,93 +1,58 @@
 const userModel = require('../models/userModel');
 const jwt = require("jsonwebtoken");
+const validator = require('../validators/validator');
+const { stringVerify, validValue, validEmail, validPhone, validPassword, validPinCode } = validator
 
-function stringVerify(value) {
-    if (typeof value === 'undefined' || value === null) {
-        return false
-    }
-    if (typeof value === 'string' && value.trim().length === 0) {
-        return false
-    } else {
-        return true
-    }
-}
-// function stringVerify(value) {
-//     if (typeof value !== "string" || value.trim().length == 0) {
-//         return false
-//     }
-//     return true
-// }
 
-//=============Create User===============
+//---------------------------Create User--------------------------------
+
 const createUser = async function (req, res) {
     try {
-        let user = req.body
-        if (Object.keys(user).length == 0) {
-            return res.status(400).send({ status: false, message: "please enter user details" })
-        }
-     // const arr=["title","name","phone","email","password"]
-    //   for(let field of arr){
-    //     if (!user[field]) {
-    //         return res.status(400).send({ status: false, message:  `${field} is required`})
-    //     }
-    //   }
-        let { title, name, phone, email, password } = user
-        if (!title) {
-            return res.status(400).send({ status: false, message: "title is required" })
+        let data = req.body
+        if (Object.keys(data).length == 0) { return res.status(400).send({ status: false, message: "Please enter user details." }) }
+
+        let { title, name, phone, email, password, address } = data
+
+        if (!title) { return res.status(400).send({ status: false, message: "Title is required." }) }
+        if (!stringVerify(title)) { return res.status(400).send({ status: false, message: "Title should be of type String." }); }
+        if (title != "Mr" && title != "Miss" && title != "Mrs") {
+            return res.status(400).send({ status: false, message: "Please write title like Mr, Mrs, Miss."});
         }
 
-        if (title != "Mr" && title != "Mrs" && title != "Miss") {
-            return res.status(400).send({ status: false, message: "title can only be mr,mrs and miss" })
-        }
-        if(!stringVerify(name)){
-            return res.status(400).send({ status: false, message: "name should be string" })
-        }
+        if (!name) { return res.status(400).send({ status: false, message: "User name is required." }); }
+        if (!stringVerify(name)) { return res.status(400).send({ status: false, message: "Name should be of type String." }); }
+        if (!validValue(name)) { return res.status(400).send({ status: false, message: " Name should contain alphabet only." }); }
 
-        if (!name) {
-            return res.status(400).send({ status: false, message: "user name is required" })
-        }
+        if (!phone) { return res.status(400).send({ status: false, message: "Phone number is required" }); }
+        if (!stringVerify(phone)) { return res.status(400).send({ status: false, message: "Phone should be of type String." }); }
+        if (!validPhone(phone)) { return res.status(400).send({ status: false, message: "Phone Number must contain 10 digits." }); }
 
-        if (!(/^[a-zA-Z ]+$/.test(name)) || (!user.name === " ")) {
-            return res.status(400).send({ status: false, message: "user name should be in alphabets" })
-        }
+        const checkphone = await userModel.findOne({ phone: phone })
+        if (checkphone) { return res.status(400).send({ status: false, message: "Phone number is already taken,Please provide another number." }); }
 
-        // if (!phone) {
-        //     return res.status(400).send({ status: false, message: "phone number is required" })
-        // }
+        if (!email) { return res.status(400).send({ status: false, message: "Email is required." }); }
+        if (!stringVerify(email)) { return res.status(400).send({ status: false, message: "Email should be of type String." }); }
+        if (!validEmail(email)) { return res.status(400).send({ status: false, message: "Email must be in correct format." }); }
 
-        let checkphone = await userModel.findOne({ phone: user.phone })
-        if (checkphone) {
-            return res.status(400).send({ status: false, message: "phone number is already taken" })
-        }
+        const checkEmail = await userModel.findOne({ email: email })
+        if (checkEmail) { return res.status(400).send({ status: false, message: "Email is already taken, Please provide another email." }); }
 
-        if (!/^[0-9]{10}$/.test(phone)) {
-            return res.status(400).send({ status: false, message: "enter valid phone number" })
-        }
+        if (!password) { return res.status(400).send({ status: false, message: "Password is required." }); }
+        if (!stringVerify(password)) { return res.status(400).send({ status: false, message: "Password should be of type String." }); }
+        if (!validPassword(password)) { return res.status(400).send({ status: false, message: "Password must contain atleast 8 characters including UpperCase, Special character and Number." }); }
 
-        // if (!email) {
-        //     return res.status(400).send({ status: false, message: "Email is required." })
-        // }
 
-        // if (!/^[a-zA-Z0-9_.+-]+@[a-z]+.[a-z]+$/.test(email)) {
-        //     return res.status(400).send({ status: false, message: "Enter valid user's email." })
-        // }
-         if (!/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(email)) {
-            return res.status(400).send({ status: false, message: "Enter valid user's email." })
-        }
+        let { street, city, pincode } = address
 
-        let checkEmail = await userModel.findOne({ email: user.email })
-        if (checkEmail) {
-            return res.status(400).send({ status: false, message: "Email is already taken, Please provide another email." })
-        }
+        if (!stringVerify(street)) { return res.status(400).send({ status: false, message: "Street should be of type String." }); }
 
-        // if (!password) {
-        //     return res.status(400).send({ status: false, message: "Password is required." })
-        // }
+        if (!stringVerify(city)) { return res.status(400).send({ status: false, message: "City should be of type String." }); }
+        if (!validValue(city)) { return res.status(400).send({ status: false, message: "City should contain alphabets only." }); }
 
-        if (!/^[a-zA-Z0-9@]{8,15}$/.test(password)) {
-            return res.status(400).send({ status: false, message: "Password should be between 8 to 15 characters." })
-        }
-        const userCreated = await userModel.create(user)
+        if (!stringVerify(pincode)) { return res.status(400).send({ status: false, message: "Pincode should be of type String." }); }
+        if (!validPinCode(pincode)) { return res.status(400).send({ status: false, message: "Pincode should contain numbers only." }); }
+
+        const userCreated = await userModel.create(data)
         return res.status(201).send({ staus: true, message: "Success", data: userCreated })
     }
     catch (error) {
@@ -96,36 +61,30 @@ const createUser = async function (req, res) {
 }
 
 
-//-----------------------------User Login----------------------------
+//--------------------------------User Login------------------------------------
 
 const createLogin = async function (req, res) {
     try {
         let login = req.body
+        if (Object.keys(login).length == 0) { return res.status(400).send({ status: false, message: "Please enter login details." }); }
 
-        if (Object.keys(login).length == 0) {
-            return res.status(400).send({ status: false, message: "Please enter login details" })
-        }
         const email = req.body.email
         const password = req.body.password
-        if (!email) {
-            return res.status(400).send({ status: false, messsage: "Email is required " })
-        }
 
-        if (!password) {
-            return res.status(400).send({ status: false, messsage: "Password is required " })
-        }
+        if (!email) { return res.status(400).send({ status: false, messsage: "Email is required." }); }
+        if (!stringVerify(email)) { return res.status(400).send({ status: false, message: "Email should be of type String." }); }
 
-        const user = await userModel.findOne({ email: email, password: password })
-        if (!user) {
-            return res.status(404).send({ status: false, message: "Email or Password not found" })
-        }
+        if (!password) { return res.status(400).send({ status: false, messsage: "Password is required." }); }
+        if (!stringVerify(password)) { return res.status(400).send({ status: false, message: "Password should be of type String." }); }
+
+        const existingUser = await userModel.findOne({ email: email, password: password })
+        if (!existingUser) { return res.status(404).send({ status: false, message: "Email or Password not found." }); }
 
         const token = jwt.sign(
             {
-            userId: user._id,
-            iat: new Date().getTime(),
-
-            //  exp:Math.floor(Date.now()/1000)+60*2
+                userId: existingUser._id,
+                iat: new Date().getTime(),
+                exp: Math.floor(Date.now() / 1000) + 60 * 600
             },
             "project3group18"
         )
@@ -137,4 +96,4 @@ const createLogin = async function (req, res) {
 }
 
 
-module.exports = {createUser, createLogin}
+module.exports = { createUser, createLogin }
