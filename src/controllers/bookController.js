@@ -152,7 +152,7 @@ const updateBookById = async function (req, res) {
         if (ISBN) {
             if (!stringVerify(ISBN)) { return res.status(400).send({ status: false, message: "ISBN should be of type String." }) }
         }
-        
+
         const checkISBN = await bookModel.findOne({ ISBN: data.ISBN })
         if (checkISBN) { return res.status(400).send({ status: false, message: "ISBN is already present." }); }
 
@@ -176,7 +176,10 @@ const deleteBookById = async function (req, res) {
         const bookId = req.params.bookId
 
         const checkBook = await bookModel.findOne({ _id: bookId, isDeleted: false })
+
         if (!checkBook) { return res.status(404).send({ status: false, message: "Book not found." }); }
+
+        if(checkBook.isDeleted == true){return res.status(404).send({ status: false, message: "Book is already deleted." });}
 
         await bookModel.findOneAndUpdate({ _id: bookId }, { $set: { isDeleted: true, deletedAt: new Date() } })
 
