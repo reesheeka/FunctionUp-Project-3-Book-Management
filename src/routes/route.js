@@ -29,7 +29,7 @@ router.delete('/books/:bookId/review/:reviewId', reviewController.deleteBookRevi
 
 
 router.all('/*', function (req, res) {
-    res.status(404).send({ status: false, message: 'Invalid HTTP Request' });
+    res.status(400).send({ status: false, message: 'Invalid HTTP Request' });
 })
 
 

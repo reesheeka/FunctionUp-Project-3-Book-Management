@@ -34,7 +34,6 @@ const createReview = async function (req, res) {
         if (reviewedBy) {
             if (!checkName(reviewedBy)) { return res.status(400).send({ status: false, message: "ReviewedBy is invalid." }); }
         }
-        if (!stringVerify(reviewedBy)) { return res.status(400).send({ status: false, message: "ReviewedBy should be of type String." }); }
         if (!reviewedBy) { data.reviewedBy = "Guest" }
 
         data.bookId = bookId
@@ -68,7 +67,7 @@ const updatereviewBookById = async function (req, res) {
         if (reviewId) {
             if (!isValidObjectId(reviewId)) { return res.status(404).send({ status: false, message: "Please enter a valid review id." }) }
         }
-        const checkreviewId = await reviewModel.findById({ _id: reviewId, isDeleted: false })
+        const checkreviewId = await reviewModel.findOne({ _id: reviewId, bookId:bookId, isDeleted: false })
         if (!checkreviewId) { return res.status(400).send({ status: false, message: "Review not found." }) }
 
         const data = req.body

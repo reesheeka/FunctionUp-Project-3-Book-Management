@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const bookModel = require("../models/bookModel");
-const { isValidObjectId } = require('mongoose');
+const { isValidObjectId, stringVerify } = require('../validators/validator')
 
 //------------------------Authentication------------------------------
 const authentication = function (req, res, Next) {
@@ -39,7 +39,10 @@ const authorisation = async function (req, res, next) {
     if (bookId) {
       if (!isValidObjectId(bookId)) { return res.status(404).send({ status: false, message: "Please enter a valid book id." }); }
 
-      const paramBookId = await bookModel.findById({ _id: bookId }).select({ userId: 1, _id: 0 })
+      const paramBookId = await bookModel.findById({ _id:bookId })
+      if (!paramBookId) { return res.status(404).send({ status: false, message: "Book Not Found" }); }
+
+  
 
       const userId = paramBookId.userId
 
@@ -53,12 +56,20 @@ const authorisation = async function (req, res, next) {
       if (Object.keys(data).length == 0) { return res.status(400).send({ status: false, message: "Please enter book details." }); }
 
       updatedbookId = req.body.userId
-
+      
       let loginId = decodedtoken.userId
+     
+      if (!updatedbookId) { return res.status(400).send({ status: false, message: "UserId is required." }); }
+      if (!stringVerify(updatedbookId)) { return res.status(400).send({ status: false, message: "UserId should be of type String." }) }
+
+      if(!isValidObjectId(updatedbookId)){return res.status(400).send({ status: false, message: "Please enter a valid userId." })}
+
+
 
       if (loginId != updatedbookId) return res.status(403).send({ status: false, message: 'You are not authorised to perform this task 2.' });
     }
     next()
+
   }
   catch (error) {
     return res.status(500).send({ status: false, message: error.message });
