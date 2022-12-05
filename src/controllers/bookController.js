@@ -1,7 +1,7 @@
 const bookModel = require('../models/bookModel');
 const reviewModel = require('../models/reviewModel');
 const validator = require('../validators/validator');
-const { stringVerify, isValidObjectId, validValue, validDate, validISBN } = validator
+const { stringVerify, validTitle, isValidObjectId, validValue, validDate, validISBN } = validator
 
 //---------------------------CREATE BOOK----------------------------
 
@@ -129,37 +129,38 @@ const updateBookById = async function (req, res) {
         const bookId = req.params.bookId
         let data = req.body
         if (Object.keys(data).length == 0) { return res.status(400).send({ status: false, message: "Please enter data for updation." }) }
-
+        
         let { title, excerpt, releasedAt, ISBN } = data
-
+        
         if (title) {
-            if (!stringVerify(title)) { return res.status(400).send({ status: false, message: "Title should be of type String." }) }
+            if (!stringVerify(title)) { return res.status(400).send({ status: false, message: "Title should be anything but type of String." }) }
         }
-
+        if (!validTitle(title)) return res.status(400).send({ status: false, message: "Can not have empty request for title" })
         const checkTitle = await bookModel.findOne({ title: data.title })
         if (checkTitle) { return res.status(400).send({ status: false, message: "Title is already present." }); }
 
         if (excerpt) {
-            if (!stringVerify(title)) { return res.status(400).send({ status: false, message: "Excerpt should be of type String." }) }
+            if (!stringVerify(excerpt)) { return res.status(400).send({ status: false, message: "Excerpt should be of type String." }) }
         }
 
         if (releasedAt) {
             if (!stringVerify(releasedAt)) { return res.status(400).send({ status: false, message: "ReleasedAt should be of type String." }) }
             if (!validDate(releasedAt)) { return res.status(400).send({ status: false, message: "Please enter a valid date format." }); }
-
         }
+        
 
         if (ISBN) {
             if (!stringVerify(ISBN)) { return res.status(400).send({ status: false, message: "ISBN should be of type String." }) }
-        }
 
+        }
+        if (!validTitle(ISBN)) return res.status(400).send({ status: false, message: "Can not have empty request for ISBN" })
         const checkISBN = await bookModel.findOne({ ISBN: data.ISBN })
         if (checkISBN) { return res.status(400).send({ status: false, message: "ISBN is already present." }); }
 
         const existBook = await bookModel.findOne({ _id: bookId, isDeleted: false })
         if (!existBook) { return res.status(404).send({ status: false, message: " No book found with given id." }); }
 
-        const updateData = await bookModel.findOneAndUpdate({ _id: bookId }, { $set: { ...data } }, { new: true })
+        const updateData = await bookModel.findOneAndUpdate({ _id: bookId }, { $set: { title: data.title, excerpt: data.excerpt, ISBN: data.ISBN, releasedAt: data.releasedAt } }, { new: true })
 
         return res.status(200).send({ status: true, message: "Success", data: updateData })
     }

@@ -50,5 +50,11 @@ function checkName(value) {
   return name.test(value);
 }
 
-module.exports = { stringVerify, validValue, validEmail, validPhone, validPassword, validPinCode, validISBN, isValidObjectId, validDate, checkName }
+const validTitle=function(title){
+  const regexTittle=/^[a-zA-Z ]{5,}|[a-zA-z0-9]+$/;
+  return regexTittle.test(title)
+}
+
+
+module.exports = { stringVerify, validTitle, validValue, validEmail, validPhone, validPassword, validPinCode, validISBN, isValidObjectId, validDate, checkName }
 

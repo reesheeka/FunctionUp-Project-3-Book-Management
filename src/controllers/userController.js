@@ -1,7 +1,7 @@
 const userModel = require('../models/userModel');
 const jwt = require("jsonwebtoken");
 const validator = require('../validators/validator');
-const { stringVerify, validValue, validEmail, validPhone, validPassword, validPinCode } = validator
+const { stringVerify, validTitle, validValue, validEmail, validPhone, validPassword, validPinCode } = validator
 
 
 //---------------------------Create User--------------------------------
@@ -16,7 +16,7 @@ const createUser = async function (req, res) {
         if (!title) { return res.status(400).send({ status: false, message: "Title is required." }) }
         if (!stringVerify(title)) { return res.status(400).send({ status: false, message: "Title should be of type String." }); }
         if (title != "Mr" && title != "Miss" && title != "Mrs") {
-            return res.status(400).send({ status: false, message: "Please write title like Mr, Mrs, Miss."});
+            return res.status(400).send({ status: false, message: "Please write title like Mr, Mrs, Miss." });
         }
 
         if (!name) { return res.status(400).send({ status: false, message: "User name is required." }); }
@@ -43,22 +43,30 @@ const createUser = async function (req, res) {
 
         // if (!address) { return res.status(400).send({ status: false, message: "Address is required." }); }
 
-        if (typeof(address) !== 'object') { return res.status(400).send({ status: false, message: "Address should be type of Object." }); }
-        
+        if (typeof (address) !== 'object') { return res.status(400).send({ status: false, message: "Address should be type of Object." }); }
+
         let { street, city, pincode } = address
-        
+
 
         // if (!city) { return res.status(400).send({ status: false, message: "city is required." }); }
         // if (!street) { return res.status(400).send({ status: false, message: "street is required." }); }
         // if (!pincode) { return res.status(400).send({ status: false, message: "pincode is required." }); }
-
-        if (!stringVerify(street)) { return res.status(400).send({ status: false, message: "Street should be type of String." }); }
-        if (!stringVerify(city)) { return res.status(400).send({ status: false, message: "City should be type of String." }); }
-        if (!validValue(city)) { return res.status(400).send({ status: false, message: "City should contain alphabets only." }); }
-
-        if (!stringVerify(pincode)) { return res.status(400).send({ status: false, message: "Pincode should be of type String." }); }
-        if (!validPinCode(pincode)) { return res.status(400).send({ status: false, message: "Pincode should contain numbers only." }); }
-
+        if (street) {
+            if (!stringVerify(street)) { return res.status(400).send({ status: false, message: "Street should be type of String." }) }
+        }
+        if (city) {
+            if (!stringVerify(city)) { return res.status(400).send({ status: false, message: "City should be type of String." }); }
+            if (!validValue(city)) { return res.status(400).send({ status: false, message: "City should contain alphabets only." }); }
+        }
+        if (pincode) {
+            if (!stringVerify(pincode)) { return res.status(400).send({ status: false, message: "Pincode should be of type String." }); }
+            if (!validPinCode(pincode)) { return res.status(400).send({ status: false, message: "Pincode should contain numbers only." }); }
+        }
+        
+        
+        if (!validTitle(street)) {return res.status(400).send({ status: false, message: "Can not have empty request for street" })}
+        if (!validTitle(city)) {return res.status(400).send({ status: false, message: "Can not have empty request for city" })}
+        if (!validTitle(pincode)) {return res.status(400).send({ status: false, message: "Can not have empty request for pincode" })}
         const userCreated = await userModel.create(data)
         return res.status(201).send({ staus: true, message: "Success", data: userCreated })
     }
@@ -66,6 +74,7 @@ const createUser = async function (req, res) {
         return res.status(500).send({ staus: false, message: error.message })
     }
 }
+
 
 
 //--------------------------------User Login------------------------------------

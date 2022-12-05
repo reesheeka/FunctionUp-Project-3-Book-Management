@@ -1,6 +1,6 @@
 const bookModel = require("../models/bookModel");
 const reviewModel = require("../models/reviewModel");
-const { stringVerify, isValidObjectId, checkName } = require("../validators/validator");
+const { stringVerify, validTitle, isValidObjectId, checkName } = require("../validators/validator");
 const moment = require("moment")
 
 
@@ -22,7 +22,7 @@ const createReview = async function (req, res) {
         const { rating, reviewedBy, review } = data
 
         if (!rating && rating != 0) { return res.status(400).send({ status: false, message: "Rating is required." }); }
-        if (rating < 1 || rating > 5 || typeof (rating) != "number") { return res.status(400).send({ status: false, message: "Rating must in between 1 to 5." }); }
+        if (rating < 1 || rating > 5 || typeof (rating) != "number") { return res.status(400).send({ status: false, message: "Rating must in between 1 to 5 and Numeric format" }); }
 
         if (!review) { return res.status(400).send({ status: false, message: "Review is required." }); }
         if (!stringVerify(review)) { return res.status(400).send({ status: false, message: "Review should be of type String." }); }
@@ -82,12 +82,15 @@ const updatereviewBookById = async function (req, res) {
         if (reviewedBy) {
             if (!checkName(reviewedBy)) { return res.status(400).send({ status: false, message: "ReviewedBy is invalid." }); }
         }
-
+        
         if (rating) {
-            if (rating < 1 || rating > 5 || typeof (rating) != "number") { return res.status(400).send({ status: false, message: "Rating must in between 1 to 5." }) }
+            if (rating < 1 || rating > 5 || typeof (rating) != "number") { return res.status(400).send({ status: false, message: "Rating must in between 1 to 5 and Numeric format." }) }
         }
-
-        const reviewData = await reviewModel.findByIdAndUpdate(reviewId, { $set: { ...data, reviewedAt: new Date() } }, { new: true, upsert: true })
+        
+        if (!validTitle(reviewedBy)) return res.status(400).send({ status: false, message: "Can not have empty request for ReviewwdBy" })
+        if (!validTitle(rating)) return res.status(400).send({ status: false, message: "Can not have empty request for Rating" })
+        if (!validTitle(review)) return res.status(400).send({ status: false, message: "Can not have empty request for Review" })
+        const reviewData = await reviewModel.findByIdAndUpdate(reviewId, { $set: { review: data.review, rating: data.rating, reviewedBy :data.reviewedBy, reviewedAt: new Date() } }, { new: true, upsert: true })
 
         checkBookId.reviewData = [reviewData]
 
