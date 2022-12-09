@@ -51,19 +51,6 @@ const createBook = async function (req, res) {
         if (!stringVerify(releasedAt)) { return res.status(400).send({ status: false, message: "ReleaseAt should be of type String." }); }
         if (!validDate(releasedAt)) { return res.status(400).send({ status: false, message: "Please enter a valid date format." }); }
 
-        let files = req.files
-        if (files && files.length > 0) {
-
-            let uploadedFileURL = await uploadFile(files[0])
-            
-            const uniqueCover = await bookModel.findOne({ bookCover: uploadedFileURL })
-            if (uniqueCover) return res.status(400).send({ status: false, message: "BookCover Already Exist." })
-            data['bookCover'] = uploadedFileURL
-        }
-        else {
-            return res.status(400).send({ msg: "No File Found!" })
-        }
-
         const bookCreated = await bookModel.create(data)
         return res.status(201).send({ status: true, message: 'Success', data: bookCreated });
     }
